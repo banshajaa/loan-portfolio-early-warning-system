@@ -1,6 +1,5 @@
-# SME_Credit_Risk_EWS
+# # SME Credit Risk – Early Warning System
 Early Warning System for SME credit risk using behavioral indicators and logistic regression
-# SME Credit Risk – Early Warning System
 > This project focuses on early risk detection using behavioral indicators and is designed for interpretability and real-world risk monitoring.
 
 ## 1. Problem Statement
