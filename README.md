@@ -96,7 +96,6 @@ This model is designed as a **monitoring tool**, not a default prediction system
 - Python  
 - Pandas, NumPy  
 - Scikit-learn
-- Matplotlib, Seaborn
-- Matplotlib, Seaborn  
+- Matplotlib, Seaborn 
 
 ---
