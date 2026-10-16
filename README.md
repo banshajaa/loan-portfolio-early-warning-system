@@ -1,101 +1,89 @@
-## SME Credit Risk – Early Warning System
-Early Warning System for SME credit risk using behavioral indicators and logistic regression
-> This project focuses on early risk detection using behavioral indicators and is designed for interpretability and real-world risk monitoring.
+# Loan Portfolio Early Warning System
+
+Early warning model that flags loan accounts showing early signs of stress, using behavioural indicators and Logistic Regression on LendingClub data.
+
+> Designed as an interpretable monitoring baseline, not a default prediction system.
 
 ## 1. Problem Statement
-This project builds an **Early Warning System (EWS)** to identify loan accounts showing **early signs of stress** before default or severe delinquency occurs.
+
+Identify loan accounts showing early signs of stress before default or severe delinquency occurs, so risk teams can monitor them and act early.
 
 ## 2. Objective
-To proactively flag risky loan accounts so that:
-- Risk teams can monitor accounts early  
-- Preventive actions can be taken  
-- Credit losses can be reduced  
-The model prioritizes **recall (capturing risky accounts)** over accuracy.
 
-## 3. Data Overview
-- Source: LendingClub dataset (publicly available)  
-- Sample size: ~300,000 records  
-The dataset includes:
-- Loan characteristics  
-- Borrower credit profile  
-- Repayment behavior  
-Only **~16 features** were selected to ensure:
-- Interpretability  
-- Reduced noise  
-- No data leakage  
+- Flag risky accounts early for monitoring and preventive action
+- Prioritise recall (capturing stressed accounts) over accuracy
+- Keep the model interpretable for risk teams
+
+## 3. Data
+
+- **Source:** LendingClub loan data (public, consumer and personal lending)
+- **Sample:** first 300,000 records of the loan file (not a random sample)
+- **Features:** about 16 selected for interpretability and to avoid leakage
 
 ## 4. Target Definition (Early Stress)
-A loan is classified as **early stress (1)** if ANY:
-- 30+ days past due (DPD)  
-- 90+ DPD in last 24 months  
-- 120+ DPD historically  
-- Recent revolving delinquency (≤ 6 months)  
-Else → 0  
-This enables **early detection** without relying on default labels.
+
+A loan is labelled early stress (1) if ANY of these apply, else 0:
+
+- 90+ days past due in the last 24 months
+- 120+ days past due historically
+- Recent revolving delinquency (6 months or less)
+
+A 30+ DPD condition was also included in the code, but that column is all zeros in this sample, so it has no effect on the target. About **22.5%** of accounts are labelled early stress.
 
 ## 5. Feature Engineering
-### Key Transformations:
-**DTI Handling**
-- `dti = 999` treated as missing income  
-- Created `dti_missing` flag  
-- Replaced 999 with NaN  
-**Delinquency Signals**
-- Converted sparse features into binary indicators  
-- Missing values treated as “no delinquency”  
-**Categorical Encoding**
-- `term` converted to numeric  
-- `sub_grade` encoded ordinally to preserve risk hierarchy
-  
+
+- **DTI:** the value 999 was treated as missing income and replaced with NaN; a `dti_missing` flag was added
+- **Delinquency signals:** sparse features converted to binary indicators; missing values treated as "no delinquency"
+- **Encoding:** `term` converted to numeric; `sub_grade` encoded ordinally to keep the risk order
+
 ## 6. Data Leakage Handling
-Initial model showed **perfect performance (ROC-AUC = 1.0)**, indicating leakage.
-**Cause:**
-Features used to define the target were included in the model  
-**Fix:**
-Removed all target-derived features from inputs  
-> Rule: Features used to create the target must not be used for prediction.
 
-## 7. Modeling Approach
-- Model: **Logistic Regression**  
-- Reason: Interpretability and suitability for risk teams  
-**Preprocessing:**
-- Missing values handled using median imputation  
-- Features scaled using StandardScaler  
-- Class imbalance handled using `class_weight='balanced'`  
+The first model scored a perfect ROC-AUC of 1.0, which signalled leakage. Features used to build the target were still in the model inputs. After removing every target-derived feature, ROC-AUC fell to a realistic 0.64.
 
-## 8. Evaluation
-- ROC-AUC ≈ **0.64** (realistic, non-leaky)  
-- Recall prioritized over precision  
-### Threshold Tuning:
-- Default threshold: 0.5  
-- Final threshold: **0.4**  
-**Result:**
-- Recall improved from ~59% → ~89%  
-- Higher false positives accepted to reduce missed risk  
+> Rule: features used to create the target must not be used to predict it.
+
+## 7. Modelling
+
+- **Model:** Logistic Regression (interpretable, suits risk teams)
+- **Preprocessing:** median imputation, StandardScaler
+- **Class imbalance:** `class_weight='balanced'`
+
+## 8. Results
+
+ROC-AUC: **0.64** on a 75,000-account test set (20% hold-out).
+
+| Threshold | Recall (stressed) | Precision (stressed) | Share of accounts flagged |
+| --------- | ----------------- | -------------------- | ------------------------- |
+| 0.5       | about 59%         | about 31%            | lower                     |
+| 0.4       | about 89%         | about 26%            | about 78%                 |
+
+The base rate is 22.5%, so precision at 0.4 is only slightly above random. Lowering the threshold finds more stressed accounts but flags most of the portfolio, which is why this is a baseline monitoring model and not production-ready.
 
 ## 9. Key Insights
-- Higher **sub-grade risk** strongly increases early stress  
-- Increased **recent credit activity** signals risk  
-- Credit risk is **multi-factor**, not driven by a single variable  
+
+- Higher sub-grade risk strongly increases early stress
+- Recent credit activity signals risk
+- Credit risk is multi-factor, not driven by one variable
 
 ## 10. Business Interpretation
-This model is designed as a **monitoring tool**, not a default prediction system.
-- False positives → manageable (monitoring)  
-- False negatives → costly (missed early stress)  
-  
-## 11. Limitations
-- Rule-based target, not actual default outcome  
-- No time-series payment behavior  
-- Moderate predictive power expected for early signals  
-  
-## 12. Future Improvements
-- Add time-based behavioral features  
-- Use transaction-level payment data  
-- Build segment-specific models  
-  
-## Tech Stack
-- Python  
-- Pandas, NumPy  
-- Scikit-learn
-- Matplotlib, Seaborn 
 
----
+The model suits monitoring and prioritisation, not decisions. It is weak at separating stressed from healthy accounts, so it should be combined with other signals before any action.
+
+## 11. Limitations
+
+- The target is rule-based, not an actual default outcome
+- The data is consumer lending, not SME lending
+- No time-series payment behaviour
+- First 300,000 rows are not a random sample
+- Moderate predictive power (AUC 0.64)
+
+## 12. Future Improvements
+
+- Rank accounts into risk deciles and measure lift in the top decile
+- Add time-based behavioural features
+- Try gradient boosting and compare with Logistic Regression
+- Tune the threshold on a separate validation set
+
+## Tech Stack
+
+Python, pandas, NumPy, scikit-learn, Matplotlib, Seaborn
