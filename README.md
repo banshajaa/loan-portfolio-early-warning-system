@@ -17,6 +17,7 @@ Identify loan accounts showing early signs of stress before default or severe de
 ## 3. Data
 
 - **Source:** LendingClub loan data (public, consumer and personal lending)
+- **How to get the data:** this project uses the public LendingClub loan dataset (`loan.csv`, 145 columns). The file is too large to store in this repo, so download it from the public source and place it in the same folder as the notebook.
 - **Sample:** first 300,000 records of the loan file (not a random sample)
 - **Features:** about 16 selected for interpretability and to avoid leakage
 
